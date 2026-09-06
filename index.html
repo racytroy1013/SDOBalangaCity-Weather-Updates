@@ -2615,6 +2615,27 @@
       </section>`;
     }
 
+    html += `<section class="glass" style="padding:1.5rem;margin-bottom:1.5rem">
+      <div class="pagasa-live-block" style="margin-top:0;padding-top:0;border-top:none">
+        <div class="pagasa-live-head">
+          <span class="live-dot" style="background:#38bdf8"></span>
+          <span>PAGASA Official Weather Advisory (PDF bulletin)</span>
+        </div>
+        <p class="pagasa-live-hint" style="margin-top:0;margin-bottom:0.7rem">
+          PAGASA's own Weather Advisory page publishes its numbered advisory bulletins as a PDF that updates as new ones are issued — it can't be reliably embedded here (the source page doesn't allow framing, and the file changes without notice), so this opens the current bulletin directly on PAGASA's site in a new tab.
+        </p>
+        <a href="${PAGASA_ADVISORY_PAGE_URL}"
+           target="_blank" rel="noopener" class="msn-link-btn">
+          ${SM.info.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:16px;height:16px"')}
+          Open PAGASA Weather Advisory
+          ${SM.trend.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:14px;height:14px;transform:rotate(-45deg)"')}
+        </a>
+        <p class="pagasa-live-hint" style="margin-top:0.7rem;margin-bottom:0">
+          <strong>Advisory vs. Warning:</strong> a <strong>Weather Advisory</strong> is a broader 24-hour forecast for provinces/regions, updated every 6 hours. A <strong>Heavy Rainfall Warning</strong> is based on real-time, observed rainfall down to the municipal level, updated every 3 hours — it's the one used for class-suspension decisions.
+        </p>
+      </div>
+    </section>`;
+
     html += `<section class="glass" style="padding:1.5rem;margin-bottom:1.5rem;background:linear-gradient(135deg,rgba(239,68,68,0.22),rgba(249,115,22,0.18));border:2px solid rgba(249,115,22,0.55);box-shadow:0 0 0 1px rgba(249,115,22,0.15),0 10px 40px -10px rgba(249,115,22,0.35)">
       <div class="card-title" style="font-size:1.15rem">📋 Monitoring Tools</div>
       <p class="pagasa-live-hint" style="margin-top:0;margin-bottom:1rem;font-size:0.9rem">Report through IMRS any hazards/incidents, such as flooded schools, schools being used as evacuation centers (ECs), damages, and other related impacts through IMRS and class suspensions through Walang Pasok Monitoring Tool.</p>
