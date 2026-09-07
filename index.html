@@ -1704,6 +1704,25 @@
   }
   function cToK(c){ return c + 273.15; }
 
+  // PAGASA-style Heat Index (Rothfusz regression, NOAA), returns °C.
+  // Below ~27°C, humidity's effect on perceived heat is negligible, so
+  // heat index is treated as equal to actual air temperature.
+  function computeHeatIndexC(tempC, rh){
+    if(tempC < 27) return tempC;
+    const tF = tempC * 9/5 + 32;
+    const hiF = -42.379 + 2.04901523*tF + 10.14333127*rh - 0.22475541*tF*rh
+      - 0.00683783*tF*tF - 0.05481717*rh*rh + 0.00122874*tF*tF*rh
+      + 0.00085282*tF*rh*rh - 0.00000199*tF*tF*rh*rh;
+    return (hiF - 32) * 5/9;
+  }
+  function heatIndexBand(hiC){
+    if(hiC < 27) return { key:"none", label:"NOT HAZARDOUS", color:"#22c55e", bg:"rgba(34,197,94,0.12)", border:"rgba(34,197,94,0.4)", sub:"Normal conditions." };
+    if(hiC < 33) return { key:"caution", label:"CAUTION", color:"#eab308", bg:"rgba(234,179,8,0.14)", border:"rgba(234,179,8,0.4)", sub:"Fatigue is possible with prolonged exposure or activity." };
+    if(hiC < 42) return { key:"extreme_caution", label:"EXTREME CAUTION", color:"#f97316", bg:"rgba(249,115,22,0.14)", border:"rgba(249,115,22,0.45)", sub:"Heat cramps and heat exhaustion are possible." };
+    if(hiC < 52) return { key:"danger", label:"DANGER", color:"#ef4444", bg:"rgba(239,68,68,0.16)", border:"rgba(239,68,68,0.5)", sub:"Heat exhaustion and heat stroke are probable with continued exposure." };
+    return { key:"extreme_danger", label:"EXTREME DANGER", color:"#a855f7", bg:"rgba(168,85,247,0.16)", border:"rgba(168,85,247,0.5)", sub:"Heat stroke is imminent." };
+  }
+
   // Resolves a city/country to lat/lon via Open-Meteo's free geocoding API.
   // Skips the network call entirely for the default Balanga City config.
   async function resolveCoords(city, country){
@@ -2383,6 +2402,10 @@
     const isNight = curDt < sunrise || curDt > sunset;
     const root = document.getElementById("dashboardRoot");
 
+    // Heat Index (computed early so it's available for the top banner stack)
+    const heatIndexC = computeHeatIndexC(num(safe(cur, "main.temp"), 300) - 273.15, num(safe(cur, "main.humidity"), 70));
+    const hiBand = heatIndexBand(heatIndexC);
+
     // Set background gradient
     const body = document.getElementById("appBody");
     ["gradient-clear","gradient-clouds","gradient-rain","gradient-thunder","gradient-night","gradient-default"]
@@ -2536,6 +2559,19 @@
         <div class="advisory-body">
           <div class="advisory-title">Gust Advisory — winds gusting to ~${Math.round(advisory.gustKmh)} km/h</div>
           <div class="advisory-sub">Sustained wind is still below ${WIND_SIGNALS.find(w=>w.signal===1).label} (39 km/h), but gusts are already reaching ${gw.label}-equivalent speeds (${gw.range}). Loose debris, umbrellas, and small branches can move at gust speeds even when the sustained wind feels calmer. This is a local estimate from live wind data, not an official PAGASA declaration.</div>
+        </div>
+      </section>`;
+    }
+
+    // Heat Index banner — real-time, computed from current temp/humidity,
+    // shown only when it's at least Caution level (below that it's not
+    // worth a top banner slot).
+    if(hiBand.key !== "none"){
+      html += `<section class="advisory-banner advisory-${hiBand.key === 'extreme_danger' ? 'red' : (hiBand.key === 'danger' ? 'orange' : 'yellow')}" style="--adv-color:${hiBand.color};--adv-bg:${hiBand.bg};--adv-border:${hiBand.border}">
+        <div class="advisory-icon">${SM.thermo.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:24px;height:24px;stroke:'+hiBand.color+'"')}</div>
+        <div class="advisory-body">
+          <div class="advisory-title">🌡️ HEAT INDEX — ${hiBand.label} (${Math.round(heatIndexC)}°C)</div>
+          <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity using PAGASA's heat index bands — not an official PAGASA reading. See the PAGASA Heat Index Map below for the official map.</div>
         </div>
       </section>`;
     }
@@ -2930,6 +2966,33 @@
         <p class="pagasa-live-hint" style="margin-bottom:0">
           Live radar map centered on Balanga, embedded from <a href="https://www.windy.com" target="_blank" rel="noopener">Windy.com</a> — a different provider from PAGASA (whose own map is the link above), shown here because it's actually embeddable. Use the play button on the map for the rain-radar loop, or the layers icon for satellite/wind/temperature.
         </p>
+      </div>
+
+      <div class="pagasa-live-block">
+        <div class="pagasa-live-head">
+          <span class="live-dot" style="background:#fb923c"></span>
+          <span>PAGASA Heat Index Map</span>
+        </div>
+        ${(() => {
+          const hiC = computeHeatIndexC(kToC(curTemp), curHum);
+          const hiBand = heatIndexBand(hiC);
+          return `<section class="advisory-banner" style="--adv-color:${hiBand.color};--adv-bg:${hiBand.bg};--adv-border:${hiBand.border};margin-bottom:1rem">
+            <div class="advisory-icon">${SM.thermo.replace('stroke="currentColor"','stroke="'+hiBand.color+'"').replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:22px;height:22px"')}</div>
+            <div class="advisory-body">
+              <div class="advisory-title">${hiBand.label} — ${Math.round(hiC)}°C heat index right now</div>
+              <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity; PAGASA's live map below is the official reading.</div>
+            </div>
+          </section>`;
+        })()}
+        <p class="pagasa-live-hint" style="margin-top:0;margin-bottom:0.7rem">
+          PAGASA's Heat Index map shows real-time heat index readings nationwide — like the rainfall warning map, it can't be embedded here, so this opens it directly on PAGASA's site.
+        </p>
+        <a href="https://iheatmap.pagasa.dost.gov.ph/"
+           target="_blank" rel="noopener" class="msn-link-btn" style="background:linear-gradient(135deg,#f97316,#ea580c)">
+          ${SM.thermo.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:16px;height:16px"')}
+          Open PAGASA Heat Index Map
+          ${SM.trend.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:14px;height:14px;transform:rotate(-45deg)"')}
+        </a>
       </div>
 
       <div class="pagasa-live-block">
