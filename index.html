@@ -2563,12 +2563,12 @@
       </section>`;
     }
 
-    // Heat Index banner — real-time, computed from current temp/humidity,
-    // shown only when it's at least Caution level (below that it's not
-    // worth a top banner slot).
-    if(hiBand.key !== "none"){
-      html += `<section class="advisory-banner advisory-${hiBand.key === 'extreme_danger' ? 'red' : (hiBand.key === 'danger' ? 'orange' : 'yellow')}" style="--adv-color:${hiBand.color};--adv-bg:${hiBand.bg};--adv-border:${hiBand.border}">
-        <div class="advisory-icon">${SM.thermo.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:24px;height:24px;stroke:'+hiBand.color+'"')}</div>
+    // Heat Index banner — always shown, like the rainfall/suspension
+    // banner above, including a green "Not Hazardous" state.
+    {
+      const hiIcon = hiBand.key === "none" ? SM.info : SM.alertTri;
+      html += `<section class="advisory-banner advisory-${hiBand.key === 'extreme_danger' ? 'red' : (hiBand.key === 'danger' ? 'orange' : (hiBand.key === 'none' ? 'none' : 'yellow'))}" style="--adv-color:${hiBand.color};--adv-bg:${hiBand.bg};--adv-border:${hiBand.border}">
+        <div class="advisory-icon">${hiIcon.replace('stroke="currentColor"','stroke="'+hiBand.color+'"').replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:24px;height:24px;stroke:'+hiBand.color+'"')}</div>
         <div class="advisory-body">
           <div class="advisory-title">🌡️ HEAT INDEX — ${hiBand.label} (${Math.round(heatIndexC)}°C)</div>
           <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity using PAGASA's heat index bands — not an official PAGASA reading.</div>
