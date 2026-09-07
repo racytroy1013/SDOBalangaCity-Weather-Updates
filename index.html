@@ -2571,7 +2571,10 @@
         <div class="advisory-icon">${SM.thermo.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:24px;height:24px;stroke:'+hiBand.color+'"')}</div>
         <div class="advisory-body">
           <div class="advisory-title">🌡️ HEAT INDEX — ${hiBand.label} (${Math.round(heatIndexC)}°C)</div>
-          <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity using PAGASA's heat index bands — not an official PAGASA reading. See the PAGASA Heat Index Map below for the official map.</div>
+          <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity using PAGASA's heat index bands — not an official PAGASA reading.</div>
+          <div class="advisory-sub" style="margin-top:0.5rem">
+            <a href="https://iheatmap.pagasa.dost.gov.ph/" target="_blank" rel="noopener" style="color:#fde68a;font-weight:700">View PAGASA Heat Index Map →</a>
+          </div>
         </div>
       </section>`;
     }
@@ -2966,33 +2969,6 @@
         <p class="pagasa-live-hint" style="margin-bottom:0">
           Live radar map centered on Balanga, embedded from <a href="https://www.windy.com" target="_blank" rel="noopener">Windy.com</a> — a different provider from PAGASA (whose own map is the link above), shown here because it's actually embeddable. Use the play button on the map for the rain-radar loop, or the layers icon for satellite/wind/temperature.
         </p>
-      </div>
-
-      <div class="pagasa-live-block">
-        <div class="pagasa-live-head">
-          <span class="live-dot" style="background:#fb923c"></span>
-          <span>PAGASA Heat Index Map</span>
-        </div>
-        ${(() => {
-          const hiC = computeHeatIndexC(kToC(curTemp), curHum);
-          const hiBand = heatIndexBand(hiC);
-          return `<section class="advisory-banner" style="--adv-color:${hiBand.color};--adv-bg:${hiBand.bg};--adv-border:${hiBand.border};margin-bottom:1rem">
-            <div class="advisory-icon">${SM.thermo.replace('stroke="currentColor"','stroke="'+hiBand.color+'"').replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:22px;height:22px"')}</div>
-            <div class="advisory-body">
-              <div class="advisory-title">${hiBand.label} — ${Math.round(hiC)}°C heat index right now</div>
-              <div class="advisory-sub">${hiBand.sub} Estimated from Balanga City's current temperature and humidity; PAGASA's live map below is the official reading.</div>
-            </div>
-          </section>`;
-        })()}
-        <p class="pagasa-live-hint" style="margin-top:0;margin-bottom:0.7rem">
-          PAGASA's Heat Index map shows real-time heat index readings nationwide — like the rainfall warning map, it can't be embedded here, so this opens it directly on PAGASA's site.
-        </p>
-        <a href="https://iheatmap.pagasa.dost.gov.ph/"
-           target="_blank" rel="noopener" class="msn-link-btn" style="background:linear-gradient(135deg,#f97316,#ea580c)">
-          ${SM.thermo.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:16px;height:16px"')}
-          Open PAGASA Heat Index Map
-          ${SM.trend.replace('viewBox="0 0 24 24"','viewBox="0 0 24 24" style="width:14px;height:14px;transform:rotate(-45deg)"')}
-        </a>
       </div>
 
       <div class="pagasa-live-block">
